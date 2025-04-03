@@ -19,11 +19,6 @@
 		"noFallthroughCasesInSwitch": false,
 		"esModuleInterop": true,
 		"allowUnreachableCode": true,
-		"paths": {
-			"@/*": [
-				"src/*"
-			]
-		},
 		"types": [
 			"vitest/globals",
 			"jest",

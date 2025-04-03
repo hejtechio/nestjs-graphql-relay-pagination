@@ -2,11 +2,11 @@ import { PageInfo } from './page-info.entity';
 import {
   Edge,
   RelayPaginatedWithCount,
-} from '@/interfaces/relay-paginated.interface';
+} from 'src/interfaces/relay-paginated.interface';
 import { CursorFields } from './cursor-fields.entity';
 import { Cursor, CursorOrderType } from './cursor.entity';
-import { CursorService } from '@/services/cursor.service';
-import { RelayPaginationArgs } from '@/args/relay-paginated.args';
+import { CursorService } from 'src/services/cursor.service';
+import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
 
 export type PaginationResultOptions = {
   currentCount: number | undefined;

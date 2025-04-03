@@ -59,14 +59,6 @@ module.exports = {
 			}
 		],
 		'max-lines': ['warn', 300],
-		'@dword-design/import-alias/prefer-alias': [
-			'error',
-			{
-				'alias': {
-					'@': './src',
-				}
-			}
-		],
 		"@typescript-eslint/switch-exhaustiveness-check": "error",
 		"@typescript-eslint/member-ordering": "error",
 		"@stylistic/js/max-len": ["error", 80, { "ignoreUrls": true, "ignoreStrings": true, "ignoreTemplateLiterals": true, "ignoreRegExpLiterals": true }],

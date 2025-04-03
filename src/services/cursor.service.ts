@@ -2,7 +2,7 @@ import {
   Cursor,
   CursorFieldFormat,
   CursorOrderType,
-} from '@/entities/cursor.entity';
+} from 'src/entities/cursor.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

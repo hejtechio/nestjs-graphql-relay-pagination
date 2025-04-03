@@ -1,4 +1,4 @@
-import { PaginationFactory } from '@/factories/pagination.factory';
+import { PaginationFactory } from 'src/factories/pagination.factory';
 import { Inject } from '@nestjs/common';
 import { ObjectLiteral } from 'typeorm';
 

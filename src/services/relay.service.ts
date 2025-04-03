@@ -1,10 +1,10 @@
 import {
   PaginationResult,
   PaginationResultOptions,
-} from '@/entities/pagination-result.entity';
-import { CursorFields } from '@/entities/cursor-fields.entity';
+} from 'src/entities/pagination-result.entity';
+import { CursorFields } from 'src/entities/cursor-fields.entity';
 import { CursorService } from './cursor.service';
-import { RelayPaginationArgs } from '@/args/relay-paginated.args';
+import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
 
 export class RelayService<Node> {
   private instances: Node[] = [];

@@ -1,17 +1,17 @@
 /* eslint-disable @stylistic/js/max-len */
 /* eslint-disable max-lines */
-import { RelayPaginationArgs } from '@/args/relay-paginated.args';
+import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
 import {
   createPaginationServiceProvider,
   InjectPaginationService,
-} from '@/decorators/pagination-service.decorator';
-import { QueryOrderEnum } from '@/enums/query-order.enum';
-import { PaginationFactory } from '@/factories/pagination.factory';
-import { PaginationModule } from '@/pagination.module';
-import { CursorService } from '@/services/cursor.service';
-import { PaginationService } from '@/services/pagination.service';
-import { QueryService } from '@/services/query.service';
-import { DEFAULT_LIMIT } from '@/util/consts';
+} from 'src/decorators/pagination-service.decorator';
+import { QueryOrderEnum } from 'src/enums/query-order.enum';
+import { PaginationFactory } from 'src/factories/pagination.factory';
+import { PaginationModule } from 'src/pagination.module';
+import { CursorService } from 'src/services/cursor.service';
+import { PaginationService } from 'src/services/pagination.service';
+import { QueryService } from 'src/services/query.service';
+import { DEFAULT_LIMIT } from 'src/util/consts';
 import { Inject, Injectable } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';

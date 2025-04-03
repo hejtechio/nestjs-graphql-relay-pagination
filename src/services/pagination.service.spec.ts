@@ -1,5 +1,5 @@
-import { RelayPaginationArgs } from '@/args/relay-paginated.args';
-import { QueryOrderEnum } from '@/enums/query-order.enum';
+import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
+import { QueryOrderEnum } from 'src/enums/query-order.enum';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Mock, vi } from 'vitest';

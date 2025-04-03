@@ -2,7 +2,7 @@ import {
   Cursor,
   CursorFieldFormat,
   CursorOrderType,
-} from '@/entities/cursor.entity';
+} from 'src/entities/cursor.entity';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CursorService } from './cursor.service';
 

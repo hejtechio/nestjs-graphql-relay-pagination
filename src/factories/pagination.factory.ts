@@ -1,6 +1,6 @@
-import { CursorService } from '@/services/cursor.service';
-import { PaginationService } from '@/services/pagination.service';
-import { QueryService } from '@/services/query.service';
+import { CursorService } from 'src/services/cursor.service';
+import { PaginationService } from 'src/services/pagination.service';
+import { QueryService } from 'src/services/query.service';
 import { Injectable } from '@nestjs/common';
 import { ObjectLiteral } from 'typeorm';
 
