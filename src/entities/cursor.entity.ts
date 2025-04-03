@@ -7,9 +7,10 @@ export enum CursorType {
 export enum CursorFieldFormat {
   STRING = 'string',
   DATE = 'date',
+  NUMBER = 'number',
 }
 
-export type CursorOrderType = string | Date;
+export type CursorOrderType = string | Date | number;
 
 export class Cursor {
   private readonly _id: string;
