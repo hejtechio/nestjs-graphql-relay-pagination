@@ -382,7 +382,7 @@ describe('PaginationService Integration Test', () => {
           entities: [TestEntity],
           url: `postgresql://root:passwd@localhost:26256/defaultdb`,
           synchronize: true,
-          logging: true,
+          logging: false,
           entityPrefix: `integration`,
         }),
         TypeOrmModule.forFeature([TestEntity]),
