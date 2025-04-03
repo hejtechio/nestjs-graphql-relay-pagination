@@ -1,0 +1,24 @@
+# source
+/src
+
+# tests
+/test
+/coverage
+/.nyc_output
+*.spec.ts
+
+# configuration
+.eslintrc.js
+.eslintignore
+.prettierrc
+.prettierignore
+jest.config.js
+tsconfig.json
+tsconfig.build.json
+
+# misc
+.git
+.github
+.gitignore
+.DS_Store
+.vscode 

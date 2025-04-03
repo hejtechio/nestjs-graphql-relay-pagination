@@ -1,0 +1,13 @@
+version: '3'
+services:
+  # CockroachDB for integration tests
+  test-db:
+    image: cockroachdb/cockroach:v24.2.5
+    pull_policy: if_not_present
+    restart: unless-stopped
+    ports:
+      - '26255:26257'
+      - '8083:8080'
+    command: start-single-node --insecure --store=type=mem,size=0.25
+    volumes:
+      - './cockroach/tests-entrypoint:/docker-entrypoint-initdb.d'
