@@ -7,6 +7,7 @@ export * from './args/relay-paginated.args';
 
 // Export decorators
 export * from './decorators/pagination-service.decorator';
+export { PAGINATION_SERVICE_TOKEN } from './decorators/pagination-service.decorator';
 
 // Export services
 export * from './services/cursor.service';
