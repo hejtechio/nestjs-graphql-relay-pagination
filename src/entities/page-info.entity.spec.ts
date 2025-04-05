@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PageInfo } from './page-info.entity';
-import { Edge } from 'src/interfaces/relay-paginated.interface';
+import { Edge } from '../interfaces/relay-paginated.interface';
 import { ObjectLiteral } from 'typeorm';
 
 // Mock ObjectLiteral type for the test

@@ -1,8 +1,8 @@
 import { ArgsType, Field, HideField, Int } from '@nestjs/graphql';
 
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { QueryOrderEnum } from 'src/enums/query-order.enum';
-import { DEFAULT_LIMIT } from 'src/util/consts';
+import { QueryOrderEnum } from '../enums';
+import { DEFAULT_LIMIT } from '../util/consts';
 
 @ArgsType()
 export class RelayPaginationArgs<Node> {

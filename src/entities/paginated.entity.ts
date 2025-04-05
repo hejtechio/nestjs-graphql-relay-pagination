@@ -2,11 +2,11 @@ import {
   RelayPageInfo,
   RelayPaginated,
   RelayPaginatedWithCount,
-} from 'src/interfaces/relay-paginated.interface';
+} from '../interfaces/relay-paginated.interface';
 import { Type } from '@nestjs/common';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
-import { Edge } from 'src/interfaces/relay-paginated.interface';
+import { Edge } from '../interfaces/relay-paginated.interface';
 
 export function EdgeObject<Node>(classReference: Type<Node>): Type<Edge<Node>> {
   @ObjectType({ isAbstract: true })

@@ -1,6 +1,6 @@
-import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
-import { CursorFields } from 'src/entities/cursor-fields.entity';
-import { PaginationResult } from 'src/entities/pagination-result.entity';
+import { RelayPaginationArgs } from '../args/relay-paginated.args';
+import { CursorFields } from '../entities/cursor-fields.entity';
+import { PaginationResult } from '../entities/pagination-result.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CursorService } from './cursor.service';
 import { RelayService } from './relay.service';

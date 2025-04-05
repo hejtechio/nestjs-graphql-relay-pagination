@@ -1,7 +1,7 @@
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral';
 import { PaginationService } from './pagination.service';
-import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
+import { RelayPaginationArgs } from '../args/relay-paginated.args';
 
 export class PaginationServiceBuilder<Node extends ObjectLiteral> {
   private args: Partial<RelayPaginationArgs<Node>>;

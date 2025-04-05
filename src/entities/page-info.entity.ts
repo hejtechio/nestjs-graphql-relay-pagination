@@ -1,4 +1,4 @@
-import { Edge } from 'src/interfaces/relay-paginated.interface';
+import { Edge } from '../interfaces/relay-paginated.interface';
 import { ObjectLiteral } from 'typeorm';
 
 export class PageInfo<Node extends ObjectLiteral> {

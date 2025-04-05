@@ -1,5 +1,5 @@
-import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
-import { CursorService } from 'src/services/cursor.service';
+import { RelayPaginationArgs } from '../args/relay-paginated.args';
+import { CursorService } from '../services/cursor.service';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CursorFields } from './cursor-fields.entity';
 import { PaginationResult } from './pagination-result.entity';

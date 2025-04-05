@@ -1,9 +1,9 @@
-import { Cursor } from 'src/entities/cursor.entity';
-import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
+import { Cursor } from '../entities/cursor.entity';
+import { RelayPaginationArgs } from '../args/relay-paginated.args';
 import {
   RelayPaginated,
   RelayQueryBuilderPaginationOptions,
-} from 'src/interfaces/relay-paginated.interface';
+} from '../interfaces/relay-paginated.interface';
 import { Injectable } from '@nestjs/common';
 import { ObjectLiteral, Repository } from 'typeorm';
 import { CursorService } from './cursor.service';

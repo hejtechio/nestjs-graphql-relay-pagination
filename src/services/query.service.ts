@@ -1,8 +1,8 @@
-import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
-import { CursorFields } from 'src/entities/cursor-fields.entity';
-import { Cursor } from 'src/entities/cursor.entity';
-import { QueryOrderEnum } from 'src/enums/query-order.enum';
-import { RelayQueryBuilderPaginationOptions } from 'src/interfaces/relay-paginated.interface';
+import { RelayPaginationArgs } from '../args/relay-paginated.args';
+import { CursorFields } from '../entities/cursor-fields.entity';
+import { Cursor } from '../entities/cursor.entity';
+import { QueryOrderEnum } from '../enums/query-order.enum';
+import { RelayQueryBuilderPaginationOptions } from '../interfaces/relay-paginated.interface';
 import { Injectable, Logger } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 

@@ -1,4 +1,4 @@
-import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
+import { RelayPaginationArgs } from '../args/relay-paginated.args';
 import { SelectQueryBuilder } from 'typeorm';
 
 export interface Edge<Node> {

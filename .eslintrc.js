@@ -5,7 +5,7 @@ module.exports = {
 		tsconfigRootDir: __dirname,
 		sourceType: 'module',
 	},
-	plugins: ['@typescript-eslint/eslint-plugin', 'unicorn', '@foxglove', 'max-params-no-constructor', 'etc', '@stylistic/js'],
+	plugins: ['@typescript-eslint/eslint-plugin', 'unicorn', '@foxglove', 'max-params-no-constructor', 'etc', '@stylistic/js', 'import'],
 	extends: [
 		'plugin:@typescript-eslint/recommended',
 		'plugin:prettier/recommended',
@@ -64,6 +64,8 @@ module.exports = {
 		"@stylistic/js/max-len": ["error", 80, { "ignoreUrls": true, "ignoreStrings": true, "ignoreTemplateLiterals": true, "ignoreRegExpLiterals": true }],
 		"unicorn/no-null": "error",
 		"eqeqeq": "error",
+		'import/no-absolute-path': 'error',
+		'@dword-design/import-alias/prefer-alias': 'off',
 	},
 	"overrides": [
 		{

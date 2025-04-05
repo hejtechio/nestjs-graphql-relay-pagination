@@ -7,7 +7,6 @@ import {
 } from 'src/decorators/pagination-service.decorator';
 import { QueryOrderEnum } from 'src/enums/query-order.enum';
 import { PaginationFactory } from 'src/factories/pagination.factory';
-import { PaginationModule } from 'src/pagination.module';
 import { CursorService } from 'src/services/cursor.service';
 import { PaginationService } from 'src/services/pagination.service';
 import { QueryService } from 'src/services/query.service';
