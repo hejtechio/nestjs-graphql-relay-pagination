@@ -61,10 +61,9 @@ module.exports = {
 		'max-lines': ['warn', 300],
 		"@typescript-eslint/switch-exhaustiveness-check": "error",
 		"@typescript-eslint/member-ordering": "error",
-		// "@stylistic/js/max-len": ["error", 80, { "ignoreUrls": true, "ignoreStrings": true, "ignoreTemplateLiterals": true, "ignoreRegExpLiterals": true }],
+		"@stylistic/js/max-len": ["error", 80, { "ignoreUrls": true, "ignoreStrings": true, "ignoreTemplateLiterals": true, "ignoreRegExpLiterals": true }],
 		"unicorn/no-null": "error",
 		"eqeqeq": "error",
-		'@dword-design/import-alias/prefer-alias': 'off',
 	},
 	"overrides": [
 		{

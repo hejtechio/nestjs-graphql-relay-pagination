@@ -1,30 +1,122 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Cursor } from 'src/entities/cursor.entity';
+import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
 import {
-  PaginationAdapter,
-  PaginationResult,
-  BasePaginationOptions,
-} from '../pagination.interfaces';
-import { PAGINATION_ADAPTER } from '../pagination.module';
+  RelayPaginated,
+  RelayQueryBuilderPaginationOptions,
+} from 'src/interfaces/relay-paginated.interface';
+import { Injectable } from '@nestjs/common';
+import { ObjectLiteral, Repository } from 'typeorm';
+import { CursorService } from './cursor.service';
+import { QueryService } from './query.service';
+import { RelayService } from './relay.service';
 
-/**
- * Service responsible for orchestrating pagination using a configured adapter.
- */
 @Injectable()
-export class PaginationService {
+export class PaginationService<Node extends ObjectLiteral> {
+  private relayService: RelayService<Node>;
+  private arguments: Partial<RelayPaginationArgs<Node>>;
+
   constructor(
-    @Inject(PAGINATION_ADAPTER) private readonly adapter: PaginationAdapter,
+    private readonly queryService: QueryService<Node>,
+    private readonly cursorService: CursorService,
   ) {}
 
-  /**
-   * Paginates data using the configured adapter.
-   *
-   * @template TEntity The type of the entity being paginated.
-   * @param options Options containing Relay arguments and adapter-specific settings (passed directly to the adapter).
-   * @returns A promise resolving to the PaginationResult.
-   */
-  paginate<TEntity>(
-    options: BasePaginationOptions<TEntity> & Record<string, any>,
-  ): Promise<PaginationResult<TEntity>> {
-    return this.adapter.paginate<TEntity>(options);
+  private get hasCursor(): boolean {
+    return !!this.arguments?.after || !!this.arguments?.before;
+  }
+
+  public getQueryBuilder() {
+    return this.queryService.getQueryBuilder();
+  }
+
+  public setup(
+    repository: Repository<Node>,
+    args?: RelayQueryBuilderPaginationOptions<Node>,
+  ) {
+    this.setArguments(args);
+
+    this.initializeServices(repository, args);
+
+    this.verifyConfiguration();
+  }
+
+  public async getManyWithCount(): Promise<RelayPaginated<Node>> {
+    const previousCount = this.hasCursor
+      ? await this.queryService.calculatePreviousCount()
+      : 0;
+
+    const [count, entities] = await this.queryService.fetchEntitiesAndCount();
+
+    this.relayService.setCounts(count, previousCount);
+    this.relayService.setInstances(entities);
+
+    return this.relayService.buildPaginationResult();
+  }
+
+  public async getMany(): Promise<RelayPaginated<Node>> {
+    const entities = await this.queryService.fetchEntities();
+
+    this.relayService.setInstances(entities);
+
+    return this.relayService.buildPaginationResult();
+  }
+
+  private setArguments(args: Partial<RelayPaginationArgs<Node>>): void {
+    let cursor: Cursor | undefined;
+
+    if (args.after) {
+      cursor = this.cursorService.createCursorFromAfterString(args.after);
+    } else if (args.before) {
+      cursor = this.cursorService.createCursorFromBeforeString(args.before);
+    }
+
+    this.queryService.setCursor(cursor);
+
+    this.arguments = args;
+  }
+
+  private initializeServices(
+    repository: Repository<Node>,
+    options?: RelayQueryBuilderPaginationOptions<Node>,
+  ): void {
+    this.queryService.initialize(repository, this.arguments);
+
+    if (options?.queryBuilder) {
+      this.queryService.setQueryBuilder(options.queryBuilder);
+    }
+
+    this.relayService = new RelayService<Node>({
+      cursorFields: this.queryService.getCursorFields(),
+      args: this.arguments,
+      cursorService: this.cursorService,
+    });
+  }
+
+  private verifyConfiguration(): void {
+    if (this.hasLastWithoutCursor()) {
+      // TODO: We could add a feature to allow the user to paginate
+      // backwards without a cursor, by simply fetching the last N
+      // However, that would require relay.service to be aware
+      // of whether or not a cursor is present
+      // so the hasPreviousPage can be set to false (it's safe to
+      // assume that if there's no cursor and last is set, there's
+      // no previous page)
+      throw new Error('Cannot paginate backwards without a cursor');
+    }
+
+    if (this.arguments.hasFirst && this.arguments.first <= 0) {
+      throw new Error('First must be a positive number');
+    }
+
+    if (this.arguments.hasLast && this.arguments.last <= 0) {
+      throw new Error('Last must be a positive number');
+    }
+
+    if (!this.arguments.order) {
+      throw new Error('Order must be provided');
+    }
+  }
+
+  private hasLastWithoutCursor(): boolean {
+    return this.arguments.hasLast && !this.hasCursor;
   }
 }

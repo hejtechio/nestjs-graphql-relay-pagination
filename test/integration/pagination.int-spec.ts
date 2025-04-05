@@ -2,33 +2,37 @@
 /* eslint-disable max-lines */
 import { RelayPaginationArgs } from 'src/args/relay-paginated.args';
 import {
-  PaginationResult,
-  TypeOrmPaginationOptions,
-  PaginationAdapter,
-} from 'src/pagination.interfaces';
+  createPaginationServiceProvider,
+  InjectPaginationService,
+} from 'src/decorators/pagination-service.decorator';
 import { QueryOrderEnum } from 'src/enums/query-order.enum';
+import { PaginationFactory } from 'src/factories/pagination.factory';
+import { PaginationModule } from 'src/pagination.module';
+import { CursorService } from 'src/services/cursor.service';
+import { PaginationService } from 'src/services/pagination.service';
+import { QueryService } from 'src/services/query.service';
 import { DEFAULT_LIMIT } from 'src/util/consts';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { addSeconds } from 'date-fns';
 import { Repository } from 'typeorm';
 import { v5 as uuidv5 } from 'uuid';
 import { TestEntity } from './entities/test.entity';
-import { PaginationService } from 'src/services/pagination.service';
-import { CursorService } from 'src/services/cursor.service';
-import { TypeOrmPaginationAdapter } from 'src/adapters/typeorm-pagination.adapter';
 
 describe('PaginationService Integration Test', () => {
-  let paginationService: PaginationService;
+  let paginationFactory: PaginationFactory;
+  let paginationService: PaginationService<TestEntity>;
   let repository: Repository<TestEntity>;
   let entities: TestEntity[] = [];
   let module: TestingModule;
+  let testPaginationService: TestPaginationService;
 
   beforeAll(async () => {
     module = await createTestingModule();
     repository = module.get(getRepositoryToken(TestEntity));
-    paginationService = module.get(PaginationService);
+    paginationFactory = module.get(PaginationFactory);
+    testPaginationService = module.get(TestPaginationService);
   });
 
   beforeEach(async () => {
@@ -39,6 +43,7 @@ describe('PaginationService Integration Test', () => {
   afterAll(async () => {
     await repository.manager.connection.destroy();
   });
+
   it('should paginate entities correctly using after', async () => {
     await createEntities(5);
     const firstPage = await paginate({ first: 2 });
@@ -370,43 +375,26 @@ describe('PaginationService Integration Test', () => {
   });
 
   async function createTestingModule(): Promise<TestingModule> {
-    // Define our injection token for the adapter
-    const PAGINATION_ADAPTER = 'PAGINATION_ADAPTER';
-
     return Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
           type: 'cockroachdb',
-          host: process.env.DB_HOST ?? 'localhost',
-          port: Number.parseInt(process.env.DB_PORT ?? '26257', 10),
-          username: process.env.DB_USERNAME ?? 'root',
-          password: process.env.DB_PASSWORD ?? '',
-          database: 'defaultdb',
           entities: [TestEntity],
+          url: `postgresql://root:passwd@localhost:26256/defaultdb`,
           synchronize: true,
           logging: false,
+          entityPrefix: `integration`,
         }),
         TypeOrmModule.forFeature([TestEntity]),
-        // PaginationModule.register() removed
       ],
-      // Explicitly provide all the components that would normally be provided by the module
       providers: [
-        // The cursor service first, as adapter depends on it
+        TestPaginationService,
         CursorService,
-        // Then the adapter implementation
-        TypeOrmPaginationAdapter,
-        // Then the adapter token mapping
+        PaginationFactory,
+        createPaginationServiceProvider<TestEntity>(),
         {
-          provide: PAGINATION_ADAPTER,
-          useExisting: TypeOrmPaginationAdapter,
-        },
-        // Finally the main pagination service
-        {
-          provide: PaginationService,
-          useFactory: (adapter: PaginationAdapter) => {
-            return new PaginationService(adapter);
-          },
-          inject: [PAGINATION_ADAPTER],
+          provide: QueryService,
+          useClass: QueryService,
         },
       ],
     }).compile();
@@ -426,30 +414,46 @@ describe('PaginationService Integration Test', () => {
     );
   }
 
-  /**
-   * Helper function to call the actual PaginationService.paginate method.
-   *
-   * @param args Relay pagination arguments (first, last, before, after, etc.)
-   * @returns The PaginationResult from the service.
-   */
-  async function paginate(
-    args?: Partial<RelayPaginationArgs<TestEntity>>,
-  ): Promise<PaginationResult<TestEntity>> {
-    // Construct the options object required by TypeOrmPaginationAdapter
-    const options: TypeOrmPaginationOptions<TestEntity> = {
-      repository: repository, // Use the repository instance from test setup
-      args: new RelayPaginationArgs<TestEntity>({
-        // Provide default order if not specified in args
-        order: QueryOrderEnum.ASC,
-        // Spread the provided args (first, last, before, after)
-        ...args,
-      }),
-      // Add any other default options needed for testing if necessary
-      // e.g., primaryCursorColumn: 'id',
-      // defaultSortField: 'createdAt' (if TestEntity has it)
-    };
+  async function paginate(options?: Partial<RelayPaginationArgs<TestEntity>>) {
+    // NOTE: Currently we are using the factory to create a new instance of the service
+    // In reality, we could do:
+    // return testPaginationService.paginate(options);
+    // However since tests are running in parallel, we need to create a new instance
 
-    // Call the injected service directly
-    return paginationService.paginate<TestEntity>(options);
+    // Create a new instance using the factory instead of resolving
+    paginationService = paginationFactory.create<TestEntity>();
+
+    paginationService.setup(
+      repository,
+      new RelayPaginationArgs({
+        order: QueryOrderEnum.ASC,
+        ...options,
+      }),
+    );
+
+    return paginationService.getManyWithCount();
   }
 });
+
+@Injectable()
+class TestPaginationService {
+  constructor(
+    @Inject(getRepositoryToken(TestEntity))
+    private readonly repository: Repository<TestEntity>,
+
+    @InjectPaginationService()
+    private readonly paginationService: PaginationService<TestEntity>,
+  ) {}
+
+  async paginate(options?: Partial<RelayPaginationArgs<TestEntity>>) {
+    this.paginationService.setup(
+      this.repository,
+      new RelayPaginationArgs({
+        order: QueryOrderEnum.ASC,
+        ...options,
+      }),
+    );
+
+    return this.paginationService.getManyWithCount();
+  }
+}
