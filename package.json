@@ -9,9 +9,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest --coverage",
     "test:debug": "node --inspect-brk -r ts-node/register node_modules/.bin/jest --runInBand --testRegex=.*\\.int-spec\\.ts$",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
