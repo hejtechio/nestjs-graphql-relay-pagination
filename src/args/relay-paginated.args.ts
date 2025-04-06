@@ -6,13 +6,13 @@ import { DEFAULT_LIMIT } from '../util/consts';
 
 @ArgsType()
 export class RelayPaginationArgs<Node> {
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int)
   @IsInt()
   @Min(1)
   @IsOptional()
   first?: number;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int)
   @IsInt()
   @Min(1)
   @IsOptional()
