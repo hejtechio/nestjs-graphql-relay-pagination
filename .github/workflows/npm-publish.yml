@@ -10,6 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Run docker compose
+        run: docker compose up -d
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
