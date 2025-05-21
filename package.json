@@ -18,7 +18,9 @@
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm test && pnpm run lint",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test:int": "jest --testTimeout=15000"
+    "pretest:int": "docker-compose up -d test-db",
+    "test:int": "jest --testTimeout=15000",
+    "posttest:int": "docker-compose rm -sf test-db"
   },
   "keywords": [
     "nestjs",
