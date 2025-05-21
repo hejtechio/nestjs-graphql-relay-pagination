@@ -42,7 +42,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Extract version from GitHub release
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        run: |
+          # Use jq to update the version field
+          jq '.version = "${{ steps.get_version.outputs.VERSION }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
       - name: Publish to NPM
-        run: pnpm publish --no-git-checks
+        run: pnpm publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

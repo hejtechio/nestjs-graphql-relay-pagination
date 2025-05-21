@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-graphql-relay-pagination",
+  "name": "@hejtech/nestjs-graphql-relay-pagination",
   "version": "0.0.1",
   "description": "A flexible pagination module for NestJS applications",
   "main": "dist/index.js",
