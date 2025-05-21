@@ -17,7 +17,7 @@ module.exports = {
 		node: true,
 		jest: false,
 	},
-	ignorePatterns: ['.eslintrc.js'],
+	ignorePatterns: ['.eslintrc.js', 'jest.config.js', 'vitest.config.ts'],
 	rules: {
 		'max-depth': ['error', 2],
 		'@typescript-eslint/interface-name-prefix': 'off',
