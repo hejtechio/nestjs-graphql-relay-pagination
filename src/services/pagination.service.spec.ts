@@ -2,7 +2,7 @@ import { RelayPaginationArgs } from '../args/relay-paginated.args';
 import { QueryOrderEnum } from '../enums/query-order.enum';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Mock, vi } from 'vitest';
+import { Mock } from 'vitest';
 import { CursorService } from './cursor.service';
 import { PaginationService } from './pagination.service';
 import { QueryService } from './query.service';

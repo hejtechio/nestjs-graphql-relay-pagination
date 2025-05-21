@@ -3,7 +3,6 @@ import {
   CursorFieldFormat,
   CursorOrderType,
 } from '../entities/cursor.entity';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { CursorService } from './cursor.service';
 
 // Helper function to create an encoded cursor string
