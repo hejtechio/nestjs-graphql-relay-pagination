@@ -71,7 +71,16 @@ describe('PaginationService', () => {
           },
           inject: [QueryService, CursorService],
         },
-        PaginationService,
+        {
+          provide: PaginationService,
+          useFactory: (
+            queryService: QueryService<FakeNode>,
+            cursorService: CursorService,
+          ) => {
+            return new PaginationService<FakeNode>(queryService, cursorService);
+          },
+          inject: [QueryService, CursorService],
+        },
       ],
     }).compile();
 
