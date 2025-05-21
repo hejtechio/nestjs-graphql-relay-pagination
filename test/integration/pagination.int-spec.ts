@@ -379,7 +379,7 @@ describe('PaginationService Integration Test', () => {
         TypeOrmModule.forRoot({
           type: 'cockroachdb',
           entities: [TestEntity],
-          url: `postgresql://root:passwd@localhost:26256/defaultdb`,
+          url: `postgresql://root:passwd@localhost:26255/defaultdb`,
           synchronize: true,
           logging: false,
           entityPrefix: `integration`,
