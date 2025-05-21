@@ -6,13 +6,13 @@ import { DEFAULT_LIMIT } from '../util/consts';
 
 @ArgsType()
 export class RelayPaginationArgs<Node> {
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   @IsInt()
   @Min(1)
   @IsOptional()
   first?: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   @IsInt()
   @Min(1)
   @IsOptional()
@@ -31,7 +31,7 @@ export class RelayPaginationArgs<Node> {
   @Field(() => QueryOrderEnum, { defaultValue: QueryOrderEnum.DESC })
   order: QueryOrderEnum;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   @IsOptional()
   orderBy?: keyof Node;
 
