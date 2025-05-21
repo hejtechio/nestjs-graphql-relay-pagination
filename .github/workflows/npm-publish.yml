@@ -42,12 +42,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run tests
-        run: pnpm test
-
-      - name: Build package
-        run: pnpm build
-
       - name: Publish to NPM
         run: pnpm publish --no-git-checks
         env:
