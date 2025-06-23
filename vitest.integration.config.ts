@@ -9,7 +9,7 @@ export default defineConfig({
   test: {
     globals: baseConfig.test?.globals,
     root: baseConfig.test?.root,
-    include: ['**/*.int-spec.ts', '**/*.integration.spec.ts'],
+    include: ['**/*.integration.spec.ts', '**/*.integration.spec.ts'],
     exclude: [...configDefaults.exclude, '**/node_modules/**', '**/dist/**'],
     env: {
       NODE_ENV: 'test',

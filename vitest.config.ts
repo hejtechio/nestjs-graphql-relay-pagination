@@ -13,7 +13,7 @@ export default defineConfig({
     exclude: [
       ...configDefaults.exclude,
       '**/*.integration.spec.ts',
-      '**/*.int-spec.ts',
+      '**/*.integration.spec.ts',
       '**/node_modules/**',
       '**/dist/**',
     ],

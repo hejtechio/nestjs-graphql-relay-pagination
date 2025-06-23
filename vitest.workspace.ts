@@ -5,14 +5,14 @@ export default defineWorkspace([
     test: {
       name: 'unit',
       include: ['src/**/*.{test,spec}.ts'],
-      exclude: ['**/*.int-spec.ts', '**/*.integration.spec.ts'],
+      exclude: ['**/*.integration.spec.ts', '**/*.integration.spec.ts'],
     },
     extends: './vitest.config.ts',
   },
   {
     test: {
       name: 'integration',
-      include: ['**/*.int-spec.ts', '**/*.integration.spec.ts'],
+      include: ['**/*.integration.spec.ts', '**/*.integration.spec.ts'],
     },
     extends: './vitest.integration.config.ts',
   },
