@@ -37,11 +37,17 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Extract version from release
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        run: |
+          # Use jq to update the version field
+          jq '.version = "${{ steps.get_version.outputs.VERSION }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
 
       - name: Build package
         run: pnpm build
@@ -54,12 +60,6 @@ jobs:
 
       - name: Pack package
         run: pnpm pack
-
-      - name: Update package.json version
-        run: |
-          # Use jq to update the version field
-          jq '.version = "${{ steps.get_version.outputs.VERSION }}"' package.json > package.json.tmp
-          mv package.json.tmp package.json
 
       - name: Publish to NPM
         run: pnpm publish --no-git-checks --access public
