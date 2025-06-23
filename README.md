@@ -2,7 +2,7 @@
 
 A flexible pagination module for NestJS GraphQL applications following the Relay cursor pagination specification.
 
-**✨ Now compatible with NestJS 11!**
+**✨ Compatible with both NestJS 10 and 11!**
 
 ## Installation
 
@@ -12,14 +12,14 @@ npm install @hejtech/nestjs-graphql-relay-pagination
 
 ## Version Compatibility
 
-| Package Version | NestJS Version |
-| --------------- | -------------- |
-| 1.x.x           | ^11.0.0        |
-| 0.x.x           | ^10.0.0        |
+| Package Version | NestJS Version       |
+| --------------- | -------------------- |
+| 1.x.x           | ^10.0.0 \|\| ^11.0.0 |
+| 0.x.x           | ^10.0.0              |
 
 ## Features
 
-- 🚀 **NestJS 11 Compatible** - Fully updated for the latest NestJS version
+- 🚀 **NestJS 10 & 11 Compatible** - Works with both NestJS 10 and 11
 - 📄 Cursor-based pagination following the Relay specification
 - 🔧 Works seamlessly with NestJS and GraphQL
 - 🔐 Customizable cursor encoding/decoding
