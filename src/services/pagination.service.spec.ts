@@ -31,6 +31,11 @@ describe('PaginationService', () => {
       orderBy: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
+      connection: {
+        driver: {
+          escape: vi.fn((identifier: string) => `"${identifier}"`),
+        },
+      },
     };
 
     mockRepository = {
@@ -167,5 +172,71 @@ describe('PaginationService', () => {
 
     expect(mockQueryBuilder.getCount).toHaveBeenCalledTimes(1);
     expect(result.edges.length).toBe(0);
+  });
+
+  describe('withWhere', () => {
+    it('should add multiple where conditions using withWhere method', () => {
+      setup({ first: 10 });
+
+      const queryService = paginationService[
+        'queryService'
+      ] as QueryService<FakeNode>;
+      vi.spyOn(mockQueryBuilder, 'andWhere');
+
+      queryService.withWhere({
+        organizationId: 'test-org-id',
+        status: 'ACTIVE',
+      });
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(2);
+
+      // Check first call for organizationId (now escaped with quotes)
+      const firstCall = mockQueryBuilder.andWhere.mock.calls[0];
+      expect(firstCall[0]).toMatch(/"organizationId" = :/);
+      expect(Object.values(firstCall[1])).toContain('test-org-id');
+
+      // Check second call for status (now escaped with quotes)
+      const secondCall = mockQueryBuilder.andWhere.mock.calls[1];
+      expect(secondCall[0]).toMatch(/"status" = :/);
+      expect(Object.values(secondCall[1])).toContain('ACTIVE');
+    });
+
+    it('should return this for method chaining', () => {
+      setup({ first: 10 });
+
+      const queryService = paginationService[
+        'queryService'
+      ] as QueryService<FakeNode>;
+      const result = queryService.withWhere({ id: '123' });
+
+      expect(result).toBe(queryService);
+    });
+
+    it('should use TypeORM escaping for field names to prevent SQL injection', () => {
+      setup({ first: 10 });
+
+      const queryService = paginationService[
+        'queryService'
+      ] as QueryService<FakeNode>;
+
+      // Mock the connection driver escape method
+      const mockEscape = vi.fn((identifier: string) => `"${identifier}"`);
+      (queryService.getQueryBuilder().connection.driver as any).escape =
+        mockEscape;
+
+      vi.spyOn(mockQueryBuilder, 'andWhere');
+
+      queryService.withWhere({
+        potentially_dangerous_field: 'value',
+      });
+
+      // Verify that the escape method was called for the field name
+      expect(mockEscape).toHaveBeenCalledWith('potentially_dangerous_field');
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(1);
+
+      // Verify the escaped field name is used in the query
+      const andWhereCall = mockQueryBuilder.andWhere.mock.calls[0];
+      expect(andWhereCall[0]).toContain('"potentially_dangerous_field"');
+    });
   });
 });

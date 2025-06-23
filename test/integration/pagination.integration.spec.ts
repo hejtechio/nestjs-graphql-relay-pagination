@@ -371,6 +371,169 @@ describe('PaginationService Integration Test', () => {
     expect(lastPage.edges[0].node.name).toBe('Entity 1');
   });
 
+  describe('withWhere method integration tests', () => {
+    it('should filter entities by a single field using withWhere', async () => {
+      // Create entities with different names and statuses
+      await repository.save([
+        {
+          id: uuidv5('1', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Test Entity 1',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-01'),
+        },
+        {
+          id: uuidv5('2', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Test Entity 2',
+          status: 'INACTIVE',
+          createdAt: new Date('2024-01-02'),
+        },
+        {
+          id: uuidv5('3', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Different Entity',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-03'),
+        },
+      ]);
+
+      const result = await paginate({ first: 10 }, (qs) =>
+        qs.withWhere({ status: 'ACTIVE' }),
+      );
+
+      expect(result.edges).toHaveLength(2);
+      expect(result.edges[0].node.name).toBe('Test Entity 1');
+      expect(result.edges[1].node.name).toBe('Different Entity');
+    });
+
+    it('should filter entities by multiple fields using withWhere', async () => {
+      // Create entities with different combinations of name and status
+      await repository.save([
+        {
+          id: uuidv5('1', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Target Entity',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-01'),
+        },
+        {
+          id: uuidv5('2', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Target Entity',
+          status: 'INACTIVE',
+          createdAt: new Date('2024-01-02'),
+        },
+        {
+          id: uuidv5('3', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Other Entity',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-03'),
+        },
+      ]);
+
+      const result = await paginate({ first: 10 }, (qs) =>
+        qs.withWhere({ name: 'Target Entity', status: 'ACTIVE' }),
+      );
+
+      expect(result.edges).toHaveLength(1);
+      expect(result.edges[0].node.name).toBe('Target Entity');
+      expect(result.edges[0].node.status).toBe('ACTIVE');
+    });
+
+    it('should work with pagination when using withWhere', async () => {
+      // Create multiple entities with the same status
+      const entities = Array.from({ length: 5 }, (_, i) => ({
+        id: uuidv5(i.toString(), '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+        name: `Active Entity ${i + 1}`,
+        status: 'ACTIVE',
+        createdAt: addSeconds(new Date('2024-01-01'), i),
+      }));
+
+      // Add one inactive entity
+      entities.push({
+        id: uuidv5('inactive', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+        name: 'Inactive Entity',
+        status: 'INACTIVE',
+        createdAt: addSeconds(new Date('2024-01-01'), 10),
+      });
+
+      await repository.save(entities);
+
+      // First page with where condition
+      const firstPage = await paginate({ first: 3 }, (qs) =>
+        qs.withWhere({ status: 'ACTIVE' }),
+      );
+
+      expect(firstPage.edges).toHaveLength(3);
+      expect(firstPage.currentCount).toBe(5); // Total active entities
+      expect(firstPage.pageInfo.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.hasPreviousPage).toBe(false);
+
+      // Second page with where condition
+      const secondPage = await paginate(
+        { first: 3, after: firstPage.pageInfo.endCursor },
+        (qs) => qs.withWhere({ status: 'ACTIVE' }),
+      );
+
+      expect(secondPage.edges).toHaveLength(2);
+      expect(secondPage.currentCount).toBe(2); // Remaining active entities
+      expect(secondPage.pageInfo.hasNextPage).toBe(false);
+      expect(secondPage.pageInfo.hasPreviousPage).toBe(true);
+    });
+
+    it('should return empty results when no entities match withWhere conditions', async () => {
+      // Create entities with different status
+      await repository.save([
+        {
+          id: uuidv5('1', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Entity 1',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-01'),
+        },
+        {
+          id: uuidv5('2', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Entity 2',
+          status: 'INACTIVE',
+          createdAt: new Date('2024-01-02'),
+        },
+      ]);
+
+      const result = await paginate({ first: 10 }, (qs) =>
+        qs.withWhere({ status: 'DELETED' }),
+      );
+
+      expect(result.edges).toHaveLength(0);
+      expect(result.pageInfo.hasNextPage).toBe(false);
+      expect(result.pageInfo.hasPreviousPage).toBe(false);
+    });
+
+    it('should support method chaining with withWhere', async () => {
+      // Create test entities
+      await repository.save([
+        {
+          id: uuidv5('1', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Chain Test 1',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-01'),
+        },
+        {
+          id: uuidv5('2', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+          name: 'Chain Test 2',
+          status: 'ACTIVE',
+          createdAt: new Date('2024-01-02'),
+        },
+      ]);
+
+      const paginationResult = await paginate({ first: 10 }, (qs) => {
+        // Test method chaining
+        const result = qs
+          .withWhere({ status: 'ACTIVE' })
+          .withWhere({ name: 'Chain Test 1' });
+
+        expect(result).toBe(qs); // Should return this for chaining
+      });
+
+      expect(paginationResult.edges).toHaveLength(1);
+      expect(paginationResult.edges[0].node.name).toBe('Chain Test 1');
+    });
+  });
+
   async function createTestingModule(): Promise<TestingModule> {
     return Test.createTestingModule({
       imports: [
@@ -406,12 +569,16 @@ describe('PaginationService Integration Test', () => {
       Array.from({ length: count }, (_, i) => ({
         id: uuidv5(i.toString(), '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
         name: `Entity ${i + 1}`,
+        status: 'ACTIVE',
         createdAt: addSeconds(new Date(), i + 1),
       })),
     );
   }
 
-  async function paginate(options?: Partial<RelayPaginationArgs<TestEntity>>) {
+  async function paginate(
+    options?: Partial<RelayPaginationArgs<TestEntity>>,
+    queryModifier?: (queryService: QueryService<TestEntity>) => void,
+  ) {
     // NOTE: Currently we are using the factory to create a new instance of the service
     // In reality, we could do:
     // return testPaginationService.paginate(options);
@@ -424,6 +591,14 @@ describe('PaginationService Integration Test', () => {
       repository,
       RelayPaginationArgs.create({ order: QueryOrderEnum.ASC, ...options }),
     );
+
+    // Apply optional query modifications (like withWhere)
+    if (queryModifier) {
+      const queryService = paginationService[
+        'queryService'
+      ] as QueryService<TestEntity>;
+      queryModifier(queryService);
+    }
 
     return paginationService.getManyWithCount();
   }

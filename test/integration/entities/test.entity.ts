@@ -12,6 +12,10 @@ export class TestEntity {
   @Column()
   name: string;
 
+  @Field()
+  @Column({ default: 'ACTIVE' })
+  status: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }

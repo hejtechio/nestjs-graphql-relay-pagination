@@ -46,6 +46,27 @@ export class QueryService<Node> {
     return this.qb;
   }
 
+  public withWhere(conditions: Record<string, any>): this {
+    const alias = this.qb.alias;
+    const connection = this.qb.connection;
+
+    for (const [field, value] of Object.entries(conditions)) {
+      const parameterName = `${field}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+
+      // Use TypeORM's built-in escaping for column names to prevent SQL injection
+      const escapedField = connection.driver.escape(field);
+      const fieldExpression = alias
+        ? `${connection.driver.escape(alias)}.${escapedField}`
+        : escapedField;
+
+      this.qb.andWhere(`${fieldExpression} = :${parameterName}`, {
+        [parameterName]: value,
+      });
+    }
+
+    return this;
+  }
+
   public initialize(
     repository: Repository<Node>,
     options: RelayQueryBuilderPaginationOptions<Node>,
