@@ -49,14 +49,14 @@ jobs:
           jq '.version = "${{ steps.get_version.outputs.VERSION }}"' package.json > package.json.tmp
           mv package.json.tmp package.json
 
-      - name: Build package
-        run: pnpm build
-
       - name: Lint code
         run: pnpm run lint
 
       - name: Run tests
         run: pnpm test
+
+      - name: Build package
+        run: pnpm build
 
       - name: Pack package
         run: pnpm pack
