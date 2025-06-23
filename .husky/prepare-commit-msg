@@ -1,0 +1,16 @@
+#!/bin/sh
+# This hook ensures that `git commit` without a message launches the
+# interactive commitizen prompt, while `git commit -m "..."` and other
+# non-interactive commits are allowed to proceed normally.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Exit if a message is already being provided by Git
+if [ "$COMMIT_SOURCE" = "message" ] || [ "$COMMIT_SOURCE" = "template" ] || [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+  exit 0
+fi
+
+# If no message source is provided, run the interactive prompt.
+# Re-route stdin from the terminal to allow the interactive prompt to work.
+exec < /dev/tty && npx cz --hook "$COMMIT_MSG_FILE" 
