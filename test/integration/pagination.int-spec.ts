@@ -424,10 +424,7 @@ describe('PaginationService Integration Test', () => {
 
     paginationService.setup(
       repository,
-      new RelayPaginationArgs({
-        order: QueryOrderEnum.ASC,
-        ...options,
-      }),
+      RelayPaginationArgs.create({ order: QueryOrderEnum.ASC, ...options }),
     );
 
     return paginationService.getManyWithCount();
@@ -447,10 +444,7 @@ class TestPaginationService {
   async paginate(options?: Partial<RelayPaginationArgs<TestEntity>>) {
     this.paginationService.setup(
       this.repository,
-      new RelayPaginationArgs({
-        order: QueryOrderEnum.ASC,
-        ...options,
-      }),
+      RelayPaginationArgs.create({ order: QueryOrderEnum.ASC, ...options }),
     );
 
     return this.paginationService.getManyWithCount();

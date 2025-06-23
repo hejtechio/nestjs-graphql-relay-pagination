@@ -92,7 +92,7 @@ describe('PaginationService', () => {
     setup = (options: Partial<RelayPaginationArgs<FakeNode>>) =>
       paginationService.setup(
         mockRepository,
-        new RelayPaginationArgs({ order: QueryOrderEnum.ASC, ...options }),
+        RelayPaginationArgs.create({ order: QueryOrderEnum.ASC, ...options }),
       );
   });
 
@@ -105,7 +105,7 @@ describe('PaginationService', () => {
       expect(() =>
         paginationService.setup(
           mockRepository,
-          new RelayPaginationArgs({ last: 10 }),
+          RelayPaginationArgs.create({ last: 10, order: QueryOrderEnum.ASC }),
         ),
       ).toThrowError('Cannot paginate backwards without a cursor');
     });
