@@ -21,7 +21,6 @@
 		"allowUnreachableCode": true,
 		"types": [
 			"vitest/globals",
-			"jest",
 			"node"
 		]
 	},

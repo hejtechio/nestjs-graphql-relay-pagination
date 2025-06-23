@@ -377,9 +377,9 @@ describe('PaginationService Integration Test', () => {
     return Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
-          type: 'cockroachdb',
+          type: 'sqlite',
+          database: ':memory:',
           entities: [TestEntity],
-          url: `postgresql://root:passwd@localhost:26255/defaultdb`,
           synchronize: true,
           logging: false,
           entityPrefix: `integration`,
