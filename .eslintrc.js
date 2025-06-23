@@ -69,7 +69,7 @@ module.exports = {
 	},
 	"overrides": [
 		{
-			"files": ["*.e2e-spec.ts", "*.integration.spec.ts", "test/e2e/**", "test/int/**"],
+			"files": ["*.e2e-spec.ts", "*.integration.spec.ts", "test/e2e/**"],
 			"rules": {
 				"unicorn/prevent-abbreviations": "off",
 				"max-lines-per-function": "off",
