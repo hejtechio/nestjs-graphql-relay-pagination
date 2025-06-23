@@ -53,7 +53,8 @@ export class QueryService<Node> {
     for (const [field, value] of Object.entries(conditions)) {
       const parameterName = `${field}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
-      // Use TypeORM's built-in escaping for column names to prevent SQL injection
+      // Use TypeORM's built-in escaping for column names to prevent
+      // SQL injection
       const escapedField = connection.driver.escape(field);
       const fieldExpression = alias
         ? `${connection.driver.escape(alias)}.${escapedField}`

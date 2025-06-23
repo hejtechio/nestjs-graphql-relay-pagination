@@ -35,7 +35,7 @@ describe('PaginationService', () => {
         driver: {
           escape: vi.fn((identifier: string) => `"${identifier}"`),
         },
-      },
+      } as any,
     };
 
     mockRepository = {
