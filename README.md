@@ -2,20 +2,31 @@
 
 A flexible pagination module for NestJS GraphQL applications following the Relay cursor pagination specification.
 
+**✨ Now compatible with NestJS 11!**
+
 ## Installation
 
 ```bash
-npm install nestjs-graphql-relay-pagination
+npm install @hejtech/nestjs-graphql-relay-pagination
 ```
+
+## Version Compatibility
+
+| Package Version | NestJS Version |
+| --------------- | -------------- |
+| 1.x.x           | ^11.0.0        |
+| 0.x.x           | ^10.0.0        |
 
 ## Features
 
-- Cursor-based pagination following the Relay specification
-- Works with NestJS and GraphQL
-- Customizable cursor encoding/decoding
-- Support for various filtering and sorting options
-- Easy integration with existing NestJS applications
-- Currently optimized for TypeORM (with plans to support more ORMs)
+- 🚀 **NestJS 11 Compatible** - Fully updated for the latest NestJS version
+- 📄 Cursor-based pagination following the Relay specification
+- 🔧 Works seamlessly with NestJS and GraphQL
+- 🔐 Customizable cursor encoding/decoding
+- 🎯 Support for various filtering and sorting options
+- ⚡ Easy integration with existing NestJS applications
+- 🗄️ Currently optimized for TypeORM (with plans to support more ORMs)
+- 🧪 Comprehensive test coverage with both unit and integration tests
 
 ## Usage
 
@@ -23,7 +34,7 @@ npm install nestjs-graphql-relay-pagination
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { PaginationModule } from 'nestjs-graphql-relay-pagination';
+import { PaginationModule } from '@hejtech/nestjs-graphql-relay-pagination';
 
 @Module({
   imports: [
@@ -41,7 +52,7 @@ import { Resolver, Query, Args } from '@nestjs/graphql';
 import {
   PaginationService,
   RelayPaginatedArgs,
-} from 'nestjs-graphql-relay-pagination';
+} from '@hejtech/nestjs-graphql-relay-pagination';
 import { YourEntity } from './your-entity.entity';
 
 @Resolver(() => YourEntity)
@@ -70,7 +81,7 @@ This package includes both unit tests and integration tests. The integration tes
 To run the unit tests:
 
 ```bash
-npm test
+pnpm test
 ```
 
 To run the integration tests:
@@ -78,19 +89,19 @@ To run the integration tests:
 1. Start the required services:
 
 ```bash
-npm run docker:up
+pnpm run docker:up
 ```
 
 2. Run the integration tests:
 
 ```bash
-npm run test:int
+pnpm run test:int
 ```
 
 3. When done, shut down the services:
 
 ```bash
-npm run docker:down
+pnpm run docker:down
 ```
 
 ## API Documentation
