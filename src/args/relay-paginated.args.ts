@@ -35,18 +35,6 @@ export class RelayPaginationArgs<Node> {
   @IsOptional()
   orderBy?: keyof Node;
 
-  constructor(
-    options: Partial<
-      Omit<RelayPaginationArgs<Node>, 'hasCursor' | 'hasLast' | 'hasFirst'>
-    > = {},
-  ) {
-    Object.assign(this, options);
-
-    if (!this.first && !this.last) {
-      this.first = DEFAULT_LIMIT;
-    }
-  }
-
   @HideField()
   public get hasCursor(): boolean {
     return !!this.after || !!this.before;
@@ -60,5 +48,34 @@ export class RelayPaginationArgs<Node> {
   @HideField()
   public get hasFirst(): boolean {
     return !!this.first;
+  }
+
+  /**
+   * Factory method to create RelayPaginationArgs with proper defaults applied.
+   * This ensures consistent behavior across NestJS versions and direct service usage.
+   */
+  static create<Node>(
+    options: Partial<
+      Omit<RelayPaginationArgs<Node>, 'hasCursor' | 'hasLast' | 'hasFirst'>
+    > = {},
+  ): RelayPaginationArgs<Node> {
+    const instance = new RelayPaginationArgs<Node>();
+
+    // Filter out computed properties that are getters-only
+    const { hasCursor, hasLast, hasFirst, ...safeOptions } = options as any;
+
+    Object.assign(instance, safeOptions);
+
+    // Apply default order if not provided (matches GraphQL defaultValue)
+    if (!instance.order) {
+      instance.order = QueryOrderEnum.DESC;
+    }
+
+    // Apply default 'first' value only if neither 'first' nor 'last' is provided
+    if (!instance.first && !instance.last) {
+      instance.first = DEFAULT_LIMIT;
+    }
+
+    return instance;
   }
 }

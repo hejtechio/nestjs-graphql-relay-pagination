@@ -71,7 +71,9 @@ export class PaginationService<Node extends ObjectLiteral> {
 
     this.queryService.setCursor(cursor);
 
-    this.arguments = args;
+    // Use factory method to ensure defaults are properly applied
+    // This fixes the silent failure when raw arguments bypass RelayPaginationArgs constructor
+    this.arguments = RelayPaginationArgs.create<Node>(args);
   }
 
   private initializeServices(
@@ -103,11 +105,14 @@ export class PaginationService<Node extends ObjectLiteral> {
       throw new Error('Cannot paginate backwards without a cursor');
     }
 
-    if (this.arguments.hasFirst && this.arguments.first <= 0) {
+    const hasFirst = !!this.arguments.first;
+    const hasLast = !!this.arguments.last;
+
+    if (hasFirst && this.arguments.first <= 0) {
       throw new Error('First must be a positive number');
     }
 
-    if (this.arguments.hasLast && this.arguments.last <= 0) {
+    if (hasLast && this.arguments.last <= 0) {
       throw new Error('Last must be a positive number');
     }
 
@@ -117,6 +122,7 @@ export class PaginationService<Node extends ObjectLiteral> {
   }
 
   private hasLastWithoutCursor(): boolean {
-    return this.arguments.hasLast && !this.hasCursor;
+    const hasLast = !!this.arguments.last;
+    return hasLast && !this.hasCursor;
   }
 }
