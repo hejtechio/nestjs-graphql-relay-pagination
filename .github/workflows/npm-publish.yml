@@ -39,6 +39,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Extract version from release
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
       - name: Build package
         run: pnpm build
 
@@ -50,10 +54,6 @@ jobs:
 
       - name: Pack package
         run: pnpm pack
-
-      - name: Extract version from release
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Update package.json version
         run: |
