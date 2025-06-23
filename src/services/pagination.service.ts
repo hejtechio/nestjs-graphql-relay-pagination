@@ -72,7 +72,8 @@ export class PaginationService<Node extends ObjectLiteral> {
     this.queryService.setCursor(cursor);
 
     // Use factory method to ensure defaults are properly applied
-    // This fixes the silent failure when raw arguments bypass RelayPaginationArgs constructor
+    // This fixes the silent failure when raw arguments bypass
+    // RelayPaginationArgs constructor
     this.arguments = RelayPaginationArgs.create<Node>(args);
   }
 

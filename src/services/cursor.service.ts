@@ -73,7 +73,7 @@ export class CursorService {
 
   private decodeOrderBy(orderBy: string): CursorOrderType | undefined {
     if (orderBy.startsWith(CursorFieldFormat.DATE + ':')) {
-      return new Date(Number.parseInt(orderBy.split(':')[1], 10)).toISOString();
+      return new Date(Number.parseInt(orderBy.split(':')[1], 10));
     } else if (orderBy.startsWith(CursorFieldFormat.STRING + ':')) {
       return orderBy.split(':').at(-1);
     }

@@ -43,7 +43,7 @@ describe('RelayPaginationArgs', () => {
       const optionsWithGetters = {
         first: 10,
         order: QueryOrderEnum.ASC,
-        hasCursor: true, // ❌ This would cause "Cannot set property hasCursor" error
+        hasCursor: true, // ❌ Would cause "Cannot set property" error
         hasFirst: true,
         hasLast: false,
       };
@@ -61,14 +61,14 @@ describe('RelayPaginationArgs', () => {
         first: 10,
         order: QueryOrderEnum.ASC,
         after: 'cursor123',
-        hasCursor: false, // This should be ignored - actual value should be true due to 'after'
-        hasFirst: false, // This should be ignored - actual value should be true due to 'first'
-        hasLast: true, // This should be ignored - actual value should be false due to no 'last'
+        hasCursor: false, // Ignored - actual value true due to 'after'
+        hasFirst: false, // Ignored - actual value true due to 'first'
+        hasLast: true, // Ignored - actual value false due to no 'last'
       };
 
       const args = RelayPaginationArgs.create(optionsWithGetters as any);
 
-      // Verify the computed properties reflect actual state, not the passed values
+      // Verify computed properties reflect actual state, not passed values
       expect(args.hasCursor).toBe(true); // true because 'after' is set
       expect(args.hasFirst).toBe(true); // true because 'first' is set
       expect(args.hasLast).toBe(false); // false because 'last' is not set

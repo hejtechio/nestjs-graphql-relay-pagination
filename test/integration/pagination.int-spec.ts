@@ -25,13 +25,11 @@ describe('PaginationService Integration Test', () => {
   let repository: Repository<TestEntity>;
   let entities: TestEntity[] = [];
   let module: TestingModule;
-  let testPaginationService: TestPaginationService;
 
   beforeAll(async () => {
     module = await createTestingModule();
     repository = module.get(getRepositoryToken(TestEntity));
     paginationFactory = module.get(PaginationFactory);
-    testPaginationService = module.get(TestPaginationService);
   });
 
   beforeEach(async () => {
@@ -408,7 +406,7 @@ describe('PaginationService Integration Test', () => {
       Array.from({ length: count }, (_, i) => ({
         id: uuidv5(i.toString(), '6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
         name: `Entity ${i + 1}`,
-        createdAt: addSeconds(new Date(), i + 1).toISOString(),
+        createdAt: addSeconds(new Date(), i + 1),
       })),
     );
   }

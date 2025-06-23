@@ -81,7 +81,7 @@ describe('CursorService', () => {
     const encodedString = createEncodedCursor('1', date);
     const decoded = cursorService.decode(encodedString);
 
-    expect(decoded.orderBy).toEqual(new Date(date.getTime()).toISOString());
+    expect(decoded.orderBy).toEqual(new Date(date.getTime()));
     expect(decoded.id).toBe('1');
   });
 

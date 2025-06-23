@@ -52,7 +52,8 @@ export class RelayPaginationArgs<Node> {
 
   /**
    * Factory method to create RelayPaginationArgs with proper defaults applied.
-   * This ensures consistent behavior across NestJS versions and direct service usage.
+   * This ensures consistent behavior across NestJS versions and direct
+   * service usage.
    */
   static create<Node>(
     options: Partial<
@@ -71,7 +72,8 @@ export class RelayPaginationArgs<Node> {
       instance.order = QueryOrderEnum.DESC;
     }
 
-    // Apply default 'first' value only if neither 'first' nor 'last' is provided
+    // Apply default 'first' value only if neither 'first' nor 'last'
+    // is provided
     if (!instance.first && !instance.last) {
       instance.first = DEFAULT_LIMIT;
     }

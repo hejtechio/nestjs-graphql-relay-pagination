@@ -13,5 +13,5 @@ export class TestEntity {
   name: string;
 
   @CreateDateColumn()
-  createdAt: string;
+  createdAt: Date;
 }
