@@ -2,6 +2,7 @@ import { Cursor } from '../entities/cursor.entity';
 import { RelayPaginationArgs } from '../args/relay-paginated.args';
 import {
   RelayPaginated,
+  RelayPaginatedWithCount,
   RelayQueryBuilderPaginationOptions,
 } from '../interfaces/relay-paginated.interface';
 import { Injectable } from '@nestjs/common';
@@ -39,7 +40,7 @@ export class PaginationService<Node extends ObjectLiteral> {
     this.verifyConfiguration();
   }
 
-  public async getManyWithCount(): Promise<RelayPaginated<Node>> {
+  public async getManyWithCount(): Promise<RelayPaginatedWithCount<Node>> {
     const previousCount = this.hasCursor
       ? await this.queryService.calculatePreviousCount()
       : 0;
@@ -71,10 +72,14 @@ export class PaginationService<Node extends ObjectLiteral> {
 
     this.queryService.setCursor(cursor);
 
-    // Use factory method to ensure defaults are properly applied
-    // This fixes the silent failure when raw arguments bypass
-    // RelayPaginationArgs constructor
-    this.arguments = RelayPaginationArgs.create<Node>(args);
+    // Extract only RelayPaginationArgs properties and use factory method
+    const { first, last, after, before } = args;
+    this.arguments = RelayPaginationArgs.create<Node>({
+      first,
+      last,
+      after,
+      before,
+    });
   }
 
   private initializeServices(
@@ -115,10 +120,6 @@ export class PaginationService<Node extends ObjectLiteral> {
 
     if (hasLast && this.arguments.last <= 0) {
       throw new Error('Last must be a positive number');
-    }
-
-    if (!this.arguments.order) {
-      throw new Error('Order must be provided');
     }
   }
 

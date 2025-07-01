@@ -1,5 +1,4 @@
 import { RelayPaginationArgs } from '../args/relay-paginated.args';
-import { QueryOrderEnum } from '../enums/query-order.enum';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Mock } from 'vitest';
@@ -29,12 +28,16 @@ describe('PaginationService', () => {
       getCount: vi.fn(),
       getMany: vi.fn(),
       orderBy: vi.fn().mockReturnThis(),
+      addOrderBy: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
       connection: {
         driver: {
           escape: vi.fn((identifier: string) => `"${identifier}"`),
         },
+      } as any,
+      expressionMap: {
+        orderBys: {},
       } as any,
     };
 
@@ -55,10 +58,7 @@ describe('PaginationService', () => {
           provide: QueryService,
           useFactory: () => {
             const service = new QueryService<FakeNode>();
-            service.initialize(mockRepository, {
-              orderBy: 'created_at',
-              order: 'ASC',
-            } as RelayPaginationArgs<FakeNode>);
+            service.initialize(mockRepository, {});
             return service;
           },
         },
@@ -97,7 +97,7 @@ describe('PaginationService', () => {
     setup = (options: Partial<RelayPaginationArgs<FakeNode>>) =>
       paginationService.setup(
         mockRepository,
-        RelayPaginationArgs.create({ order: QueryOrderEnum.ASC, ...options }),
+        RelayPaginationArgs.create({ ...options }),
       );
   });
 
@@ -110,7 +110,7 @@ describe('PaginationService', () => {
       expect(() =>
         paginationService.setup(
           mockRepository,
-          RelayPaginationArgs.create({ last: 10, order: QueryOrderEnum.ASC }),
+          RelayPaginationArgs.create({ last: 10 }),
         ),
       ).toThrowError('Cannot paginate backwards without a cursor');
     });
@@ -165,7 +165,6 @@ describe('PaginationService', () => {
 
     setup({
       first: 100,
-      order: QueryOrderEnum.ASC,
     });
 
     const result = await paginationService.getManyWithCount();

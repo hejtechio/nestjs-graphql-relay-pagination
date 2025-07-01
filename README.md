@@ -61,13 +61,90 @@ export class YourResolver {
 
   @Query(() => YourEntity)
   async findAll(@Args() args: RelayPaginatedArgs) {
-    return this.paginationService.paginate({
+    return this.paginationService.getManyWithCount({
       args,
       query: (queryBuilder) => {
         // Your query logic here
         return queryBuilder;
       },
     });
+  }
+}
+```
+
+### Sorting and Filtering
+
+This library intentionally delegates all sorting and filtering logic to your `QueryBuilder`. This approach provides maximum flexibility, allowing you to implement complex, multi-column sorting, utilize database-specific functions, and handle filtering dynamically.
+
+You are responsible for adding any `orderBy` clauses to your `QueryBuilder` instance before passing it to the `setup` method. The pagination service will automatically introspect the `QueryBuilder` to determine the sort order for cursor creation.
+
+If no `orderBy` clause is present on the `QueryBuilder`, the service will automatically sort by the entity's creation date (`createdAt` or the field decorated with `@CreateDateColumn`) in descending order as a sensible default.
+
+#### Example
+
+Here is an example of a resolver that handles dynamic sorting and filtering before pagination.
+
+```typescript
+import { Resolver, Query, Args } from '@nestjs/graphql';
+import {
+  PaginationService,
+  RelayPaginatedArgs,
+} from '@hejtech/nestjs-graphql-relay-pagination';
+import { YourEntity } from './your-entity.entity';
+import { YourEntitySortField, SortOrder } from '../enums'; // Your application-specific enums
+import { Repository } from 'typeorm';
+
+@ArgsType()
+class FindAllArgs extends RelayPaginatedArgs {
+  @Field(() => String, { nullable: true })
+  nameContains?: string;
+
+  @Field(() => YourEntitySortField, { nullable: true })
+  sortBy?: YourEntitySortField;
+
+  @Field(() => SortOrder, { nullable: true })
+  sortOrder?: SortOrder;
+}
+
+@Resolver(() => YourEntity)
+export class YourResolver {
+  constructor(
+    private readonly paginationService: PaginationService<YourEntity>,
+    private readonly entityRepository: Repository<YourEntity>, // Injected repository
+  ) {}
+
+  @Query(() => YourEntity)
+  async findAll(@Args() args: FindAllArgs) {
+    const { sortBy, sortOrder, nameContains, ...paginationArgs } = args;
+
+    const queryBuilder = this.entityRepository.createQueryBuilder('entity');
+
+    if (nameContains) {
+      queryBuilder.andWhere('entity.name ILIKE :nameContains', {
+        nameContains: `%${nameContains}%`,
+      });
+    }
+
+    if (sortBy && sortOrder) {
+      const sortColumn = this.getSortColumn(sortBy);
+      queryBuilder.orderBy(sortColumn, sortOrder, 'NULLS LAST');
+    }
+
+    // The pagination service automatically uses the order set on the queryBuilder
+    this.paginationService.setup(this.entityRepository, {
+      ...paginationArgs,
+      queryBuilder,
+    });
+
+    return this.paginationService.getManyWithCount();
+  }
+
+  private getSortColumn(sortBy: YourEntitySortField): string {
+    const sortFieldMap: { [key in YourEntitySortField]: string } = {
+      [YourEntitySortField.CREATED_AT]: 'entity.createdAt',
+      [YourEntitySortField.NAME]: 'entity.name',
+    };
+    return sortFieldMap[sortBy];
   }
 }
 ```

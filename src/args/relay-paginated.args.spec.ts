@@ -1,5 +1,4 @@
 import { RelayPaginationArgs } from './relay-paginated.args';
-import { QueryOrderEnum } from '../enums/query-order.enum';
 import { DEFAULT_LIMIT } from '../util/consts';
 
 describe('RelayPaginationArgs', () => {
@@ -9,30 +8,23 @@ describe('RelayPaginationArgs', () => {
 
       expect(args.first).toBe(DEFAULT_LIMIT);
       expect(args.last).toBeUndefined();
-      expect(args.order).toBe(QueryOrderEnum.DESC);
       expect(args.after).toBeUndefined();
       expect(args.before).toBeUndefined();
-      expect(args.orderBy).toBeUndefined();
     });
 
     it('should apply provided options correctly', () => {
       const args = RelayPaginationArgs.create({
         first: 5,
-        order: QueryOrderEnum.ASC,
         after: 'cursor123',
-        orderBy: 'createdAt',
       });
 
       expect(args.first).toBe(5);
-      expect(args.order).toBe(QueryOrderEnum.ASC);
       expect(args.after).toBe('cursor123');
-      expect(args.orderBy).toBe('createdAt');
     });
 
     it('should not set first when last is provided', () => {
       const args = RelayPaginationArgs.create({
         last: 5,
-        order: QueryOrderEnum.ASC,
       });
 
       expect(args.first).toBeUndefined();
@@ -42,7 +34,6 @@ describe('RelayPaginationArgs', () => {
     it('should handle objects with computed getter properties without throwing errors', () => {
       const optionsWithGetters = {
         first: 10,
-        order: QueryOrderEnum.ASC,
         hasCursor: true, // ❌ Would cause "Cannot set property" error
         hasFirst: true,
         hasLast: false,
@@ -52,14 +43,12 @@ describe('RelayPaginationArgs', () => {
       expect(() => {
         const args = RelayPaginationArgs.create(optionsWithGetters as any);
         expect(args.first).toBe(10);
-        expect(args.order).toBe(QueryOrderEnum.ASC);
       }).not.toThrow();
     });
 
     it('should ignore computed properties and calculate them from actual values', () => {
       const optionsWithGetters = {
         first: 10,
-        order: QueryOrderEnum.ASC,
         after: 'cursor123',
         hasCursor: false, // Ignored - actual value true due to 'after'
         hasFirst: false, // Ignored - actual value true due to 'first'
@@ -98,7 +87,7 @@ describe('RelayPaginationArgs', () => {
     });
 
     it('should calculate hasLast correctly', () => {
-      const argsWithLast = RelayPaginationArgs.create({ last: 10 });
+      const argsWithLast = RelayPaginationArgs.create({ last: 5 });
       expect(argsWithLast.hasLast).toBe(true);
 
       const argsWithoutLast = RelayPaginationArgs.create({ first: 10 });
@@ -122,10 +111,6 @@ describe('RelayPaginationArgs', () => {
       const withLast = RelayPaginationArgs.create({ last: 5 });
       expect(withLast.first).toBeUndefined();
       expect(withLast.last).toBe(5);
-
-      // Test: Default order should be DESC
-      const defaultOrder = RelayPaginationArgs.create();
-      expect(defaultOrder.order).toBe(QueryOrderEnum.DESC);
     });
   });
 

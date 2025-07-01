@@ -1,17 +1,18 @@
 import { RelayPaginationArgs } from '../args/relay-paginated.args';
 import { CursorFields } from '../entities/cursor-fields.entity';
 import { Cursor } from '../entities/cursor.entity';
-import { QueryOrderEnum } from '../enums/query-order.enum';
 import { RelayQueryBuilderPaginationOptions } from '../interfaces/relay-paginated.interface';
 import { Injectable, Logger } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+
+type Order = 'ASC' | 'DESC';
 
 @Injectable()
 export class QueryService<Node> {
   private qb: SelectQueryBuilder<Node>;
   private repository: Repository<Node>;
   private cursor?: Cursor;
-  private cursorFields: CursorFields<Node>;
+  private cursorFields?: CursorFields<Node>;
   private arguments: Partial<RelayPaginationArgs<Node>>;
 
   public get hasCursor(): boolean {
@@ -19,7 +20,7 @@ export class QueryService<Node> {
   }
 
   public get orderByFieldName(): string {
-    return this.cursorFields.orderByFieldName;
+    return this.getPrimarySortField();
   }
 
   public get idFieldName(): string {
@@ -31,6 +32,14 @@ export class QueryService<Node> {
   }
 
   public getCursorFields(): CursorFields<Node> {
+    if (!this.cursorFields) {
+      // Create cursor fields lazily, using primary sort field from QB
+      const orderByField = this.getPrimarySortField();
+      this.cursorFields = new CursorFields<Node>(
+        this.getIdColumnPropertyName(),
+        orderByField,
+      );
+    }
     return this.cursorFields;
   }
 
@@ -74,13 +83,8 @@ export class QueryService<Node> {
   ): void {
     this.qb = repository.createQueryBuilder();
     this.repository = repository;
-
     this.arguments = options;
-
-    this.cursorFields = new CursorFields<Node>(
-      options?.cursorFields?.id ?? this.getIdColumnPropertyName(),
-      options.orderBy ?? this.getDateColumnPropertyName(),
-    );
+    // Don't initialize cursorFields here - we'll do it lazily
   }
 
   public async fetchEntitiesAndCount(): Promise<[number, Node[]]> {
@@ -103,15 +107,33 @@ export class QueryService<Node> {
     return previousQb.getCount();
   }
 
+  private getPrimarySortField(): string {
+    const orderBys = this.qb.expressionMap.orderBys;
+    if (Object.keys(orderBys).length === 0) {
+      const fallbackField =
+        this.getDateColumnPropertyName() ?? this.getIdColumnPropertyName();
+      if (!fallbackField) {
+        throw new Error(
+          'Could not determine a fallback sort field. Please specify an order.',
+        );
+      }
+
+      this.qb.addOrderBy(`${this.qb.alias}.${fallbackField}`, 'DESC');
+
+      return fallbackField;
+    }
+    const [field] = Object.keys(orderBys)[0].split('.').slice(-1);
+    return field;
+  }
+
   private getOppositeComparisonOperator() {
     return this.getComparisonOperator() === '>' ? '<' : '>';
   }
 
   private getComparisonOperator(): '>' | '<' {
-    const orderDirection = this.arguments.order;
+    const orderDirection = this.getOrderDirection();
     const isAfter = this.cursor ? this.cursor.isAfter : true;
-
-    if (orderDirection === QueryOrderEnum.ASC) {
+    if (orderDirection === 'ASC') {
       return isAfter ? '>' : '<';
     } else {
       return isAfter ? '<' : '>';
@@ -132,12 +154,8 @@ export class QueryService<Node> {
     qb: SelectQueryBuilder<Node>,
     comparisonOperator?: '>' | '<',
   ): void {
-    if (!this.hasCursor) {
-      return;
-    }
-
+    if (!this.hasCursor) return;
     const comparison = comparisonOperator ?? this.getComparisonOperator();
-
     this.addOrderByCondition(qb, comparison);
   }
 
@@ -149,12 +167,8 @@ export class QueryService<Node> {
 
     if (this.cursor.orderingByMultipleFields) {
       qb.andWhere(
-        `(${alias}.${this.orderByFieldName} ${comparison} :afterField) 
-       OR (${alias}.${this.orderByFieldName} = :afterField AND ${alias}.${this.idFieldName} ${comparison} :afterId)`,
-        {
-          afterField: this.cursor.orderBy,
-          afterId: this.cursor.id,
-        },
+        `(${alias}.${this.orderByFieldName} ${comparison} :afterField) OR (${alias}.${this.orderByFieldName} = :afterField AND ${alias}.${this.idFieldName} ${comparison} :afterId)`,
+        { afterField: this.cursor.orderBy, afterId: this.cursor.id },
       );
     } else {
       qb.andWhere(`${alias}.${this.idFieldName} ${comparison} :afterField`, {
@@ -165,8 +179,7 @@ export class QueryService<Node> {
 
   private fetchNodes(): Promise<Node[]> {
     this.warnIfFieldsNotIndexed();
-
-    return this.qb.orderBy(this.getOrderBy()).limit(this.limit).getMany();
+    return this.qb.limit(this.limit).getMany();
   }
 
   private warnIfFieldsNotIndexed(): void {
@@ -174,9 +187,9 @@ export class QueryService<Node> {
       Logger.warn(
         `The field(s) "${this.unindexedFields().join(
           ', ',
-        )}" are not indexed. This can lead to performance issues in larger datasets. Consider running: CREATE INDEX ON "${this.repository.metadata.tableName}" ("${this.indexesUsed().join(
-          '","',
-        )}")`,
+        )}" are not indexed. This can lead to performance issues in larger datasets. Consider running: CREATE INDEX ON "${
+          this.repository.metadata.tableName
+        }" ("${this.indexesUsed().join('","')}")`,
         this.constructor.name,
       );
     }
@@ -207,15 +220,6 @@ export class QueryService<Node> {
     ]);
   }
 
-  private getOrderBy(): { [key: string]: QueryOrderEnum } {
-    return {
-      [`${this.qb.alias}.${this.orderByFieldName}`]: this.getOrderDirection(),
-      ...(this.orderByFieldName !== this.idFieldName && {
-        [`${this.qb.alias}.${this.idFieldName}`]: QueryOrderEnum.ASC,
-      }),
-    };
-  }
-
   private async fetchEntityCount(): Promise<number> {
     return this.cloneQueryBuilder().getCount();
   }
@@ -224,17 +228,25 @@ export class QueryService<Node> {
     return this.qb.clone();
   }
 
-  private getOrderDirection(): QueryOrderEnum {
+  private getOrderDirection(): Order {
     if (this.arguments.hasLast) {
-      return this.reverseOrder(this.arguments.order);
+      return this.reverseOrder(this.getPrimarySortDirection());
     }
-
-    return this.arguments.order;
+    return this.getPrimarySortDirection();
   }
 
-  private reverseOrder(order: QueryOrderEnum): QueryOrderEnum {
-    return order === QueryOrderEnum.ASC
-      ? QueryOrderEnum.DESC
-      : QueryOrderEnum.ASC;
+  private getPrimarySortDirection(): Order {
+    const orderBys = this.qb.expressionMap.orderBys;
+    const firstOrderBy = Object.values(orderBys)[0];
+
+    if (typeof firstOrderBy === 'object' && firstOrderBy.order) {
+      return firstOrderBy.order;
+    }
+
+    return firstOrderBy as Order;
+  }
+
+  private reverseOrder(order: Order): Order {
+    return order === 'ASC' ? 'DESC' : 'ASC';
   }
 }

@@ -1,11 +1,10 @@
 import { ArgsType, Field, HideField, Int } from '@nestjs/graphql';
 
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { QueryOrderEnum } from '../enums';
 import { DEFAULT_LIMIT } from '../util/consts';
 
 @ArgsType()
-export class RelayPaginationArgs<Node> {
+export class RelayPaginationArgs<_Node = any> {
   @Field(() => Int, { nullable: true })
   @IsInt()
   @Min(1)
@@ -28,13 +27,6 @@ export class RelayPaginationArgs<Node> {
   @IsString()
   before?: string;
 
-  @Field(() => QueryOrderEnum, { defaultValue: QueryOrderEnum.DESC })
-  order: QueryOrderEnum;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  orderBy?: keyof Node;
-
   @HideField()
   public get hasCursor(): boolean {
     return !!this.after || !!this.before;
@@ -55,22 +47,17 @@ export class RelayPaginationArgs<Node> {
    * This ensures consistent behavior across NestJS versions and direct
    * service usage.
    */
-  static create<Node>(
+  static create<_Node = any>(
     options: Partial<
-      Omit<RelayPaginationArgs<Node>, 'hasCursor' | 'hasLast' | 'hasFirst'>
+      Omit<RelayPaginationArgs<_Node>, 'hasCursor' | 'hasLast' | 'hasFirst'>
     > = {},
-  ): RelayPaginationArgs<Node> {
-    const instance = new RelayPaginationArgs<Node>();
+  ): RelayPaginationArgs<_Node> {
+    const instance = new RelayPaginationArgs<_Node>();
 
     // Filter out computed properties that are getters-only
     const { hasCursor, hasLast, hasFirst, ...safeOptions } = options as any;
 
     Object.assign(instance, safeOptions);
-
-    // Apply default order if not provided (matches GraphQL defaultValue)
-    if (!instance.order) {
-      instance.order = QueryOrderEnum.DESC;
-    }
 
     // Apply default 'first' value only if neither 'first' nor 'last'
     // is provided
