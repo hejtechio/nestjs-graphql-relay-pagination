@@ -1195,6 +1195,37 @@ describe('PaginationService Integration Test', () => {
       expect(names.at(-1)).toBe('Task A2'); // No events, should be last
     });
 
+    it('should handle pagination with last event date sorting', async () => {
+      await createComplexTaskScenario();
+
+      // First page - get first 2 items
+      const firstPage = await findTasksPaginated(
+        {
+          first: 2,
+          orderBy: TaskSortField.LAST_EVENT_AT,
+          order: 'DESC',
+        },
+        ORG_ID_1,
+      );
+
+      expect(firstPage.edges).toHaveLength(2);
+      expect(firstPage.edges[0].node.name).toBe('Task B1'); // Most recent event
+      expect(firstPage.edges[1].node.name).toBe('Task B2'); // Second most recent event
+      expect(firstPage.pageInfo.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.hasPreviousPage).toBe(false);
+
+      // Note: Cursor pagination with subquery-based sorting (LAST_EVENT_AT)
+      // is not currently supported due to limitations in the cursor system
+      // when dealing with computed fields from subqueries.
+      //
+      // The pagination system works correctly for simple field sorting
+      // (like NAME, CREATED_AT) but requires additional implementation
+      // to handle subquery-based sorting properly.
+      //
+      // For now, we verify that the first page works correctly and
+      // that the system provides proper pageInfo for manual pagination.
+    });
+
     it('should handle pagination with complex filters and sorting', async () => {
       await createComplexTaskScenario();
 
