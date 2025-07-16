@@ -49,8 +49,9 @@ export class TaskOrderBy {
 /**
  * Example: Entity-specific args class extending RelayPaginationArgs.
  *
- * This demonstrates the recommended pattern for adding ordering to specific entities
- * while maintaining type safety and separation of concerns.
+ * This demonstrates the recommended pattern for adding ordering
+ * to specific entities while maintaining type safety and separation
+ * of concerns.
  *
  * Usage in resolver:
  * ```typescript
@@ -60,7 +61,10 @@ export class TaskOrderBy {
  *
  *   // Apply ordering if specified
  *   if (args.orderBy) {
- *     queryBuilder.orderBy(`task.${args.orderBy.field}`, args.orderBy.direction);
+ *     queryBuilder.orderBy(
+ *       `task.${args.orderBy.field}`,
+ *       args.orderBy.direction,
+ *     );
  *   }
  *
  *   // The pagination service will detect the ordering automatically
