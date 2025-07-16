@@ -24,8 +24,8 @@ export * from './src/interfaces/relay-paginated.interface';
 // Export args
 export * from './src/args/relay-paginated.args';
 
-// Export enums
-export * from './src/enums/query-order.enum';
+// Export examples (for reference and extension)
+export * from './src/args/example-task.args';
 
 // Export utils
 export * from './src/util/consts';
