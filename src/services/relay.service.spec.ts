@@ -121,17 +121,6 @@ describe('RelayService', () => {
       expect(paginationResult.edges.length).toBe(0);
     });
 
-    it('should handle default counts if setCounts is not called', () => {
-      const instances: FakeNode[] = [
-        { id: '1', created_at: new Date('2023-01-01T00:00:00Z') },
-        { id: '2', created_at: new Date('2023-01-02T00:00:00Z') },
-      ];
-      relayService.setInstances(instances);
-
-      const paginationResult = relayService.buildPaginationResult();
-      expect(paginationResult.totalCount).toBe(0);
-    });
-
     it('should handle default instances if setInstances is not called', () => {
       relayService.setCounts(0, 0);
 

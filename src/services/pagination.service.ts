@@ -45,9 +45,10 @@ export class PaginationService<Node extends ObjectLiteral> {
       ? await this.queryService.calculatePreviousCount()
       : 0;
 
-    const [count, entities] = await this.queryService.fetchEntitiesAndCount();
+    const [currentCount, entities] =
+      await this.queryService.fetchEntitiesAndCount();
 
-    this.relayService.setCounts(count, previousCount);
+    this.relayService.setCounts(currentCount, previousCount);
     this.relayService.setInstances(entities);
 
     return this.relayService.buildPaginationResult();

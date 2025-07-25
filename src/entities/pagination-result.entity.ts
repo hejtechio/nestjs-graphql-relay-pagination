@@ -18,6 +18,7 @@ interface PaginationResultParameters<Node> {
   cursorFields: CursorFields<Node>;
   options: Partial<RelayPaginationArgs<Node>>;
   counts: PaginationResultOptions;
+  totalCount?: number;
 }
 
 export class PaginationResult<Node> implements RelayPaginatedWithCount<Node> {
@@ -45,7 +46,9 @@ export class PaginationResult<Node> implements RelayPaginatedWithCount<Node> {
 
     this.verifyConfiguration();
 
-    this.totalCount = this.calculateTotalCount(parameters.counts);
+    // Use provided totalCount if available, otherwise fall back to calculation
+    this.totalCount =
+      parameters.totalCount ?? this.calculateTotalCount(parameters.counts);
     this.edges = this.createEdges(parameters.instances ?? []);
     this.pageInfo = this.createPageInfo();
   }
@@ -67,9 +70,7 @@ export class PaginationResult<Node> implements RelayPaginatedWithCount<Node> {
   }
 
   private calculateTotalCount(counts: PaginationResultOptions): number {
-    const count = (counts.currentCount ?? 0) + (counts.previousCount ?? 0);
-
-    return this.hasCursor ? count + 1 : count;
+    return (counts.currentCount ?? 0) + (counts.previousCount ?? 0);
   }
 
   private createEdges(instances: Node[]): Edge<Node>[] {

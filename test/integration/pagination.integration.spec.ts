@@ -67,6 +67,7 @@ describe('PaginationService Integration Test', () => {
 
     expect(firstPage).toMatchObject({
       edges: expect.any(Array),
+      totalCount: 5,
       currentCount: 5,
       previousCount: 0,
       pageInfo: {
@@ -84,8 +85,9 @@ describe('PaginationService Integration Test', () => {
 
     expect(secondPage).toMatchObject({
       edges: expect.any(Array),
+      totalCount: 5,
       currentCount: 3,
-      previousCount: 1,
+      previousCount: 2,
       pageInfo: {
         hasNextPage: true,
         hasPreviousPage: true,
@@ -101,8 +103,9 @@ describe('PaginationService Integration Test', () => {
 
     expect(lastPage).toMatchObject({
       edges: expect.any(Array),
+      totalCount: 5,
       currentCount: 1,
-      previousCount: 3,
+      previousCount: 4,
       pageInfo: {
         hasNextPage: false,
         hasPreviousPage: true,
@@ -118,6 +121,7 @@ describe('PaginationService Integration Test', () => {
 
     expect(firstPage).toMatchObject({
       edges: expect.any(Array),
+      totalCount: 10,
       currentCount: 10,
       previousCount: 0,
       pageInfo: {
@@ -169,8 +173,9 @@ describe('PaginationService Integration Test', () => {
         startCursor: '',
         endCursor: '',
       },
+      totalCount: 5,
       currentCount: 0,
-      previousCount: 4,
+      previousCount: 5,
     });
   });
 
@@ -491,7 +496,7 @@ describe('PaginationService Integration Test', () => {
       );
 
       expect(firstPage.edges).toHaveLength(3);
-      expect(firstPage.currentCount).toBe(5); // Total active entities
+      expect(firstPage.totalCount).toBe(5); // Total active entities
       expect(firstPage.pageInfo.hasNextPage).toBe(true);
       expect(firstPage.pageInfo.hasPreviousPage).toBe(false);
 
@@ -502,6 +507,7 @@ describe('PaginationService Integration Test', () => {
       );
 
       expect(secondPage.edges).toHaveLength(2);
+      expect(secondPage.totalCount).toBe(5);
       expect(secondPage.currentCount).toBe(2); // Remaining active entities
       expect(secondPage.pageInfo.hasNextPage).toBe(false);
       expect(secondPage.pageInfo.hasPreviousPage).toBe(true);
@@ -529,6 +535,8 @@ describe('PaginationService Integration Test', () => {
       );
 
       expect(result.edges).toHaveLength(0);
+      expect(result.totalCount).toBe(0);
+      expect(result.currentCount).toBe(0);
       expect(result.pageInfo.hasNextPage).toBe(false);
       expect(result.pageInfo.hasPreviousPage).toBe(false);
     });
@@ -709,6 +717,7 @@ describe('PaginationService Integration Test', () => {
         const result = await getManyWithCount({ first: 10 });
 
         expect(result.edges).toHaveLength(0);
+        expect(result.totalCount).toBe(0);
         expect(result.currentCount).toBe(0);
         expect(result.previousCount).toBe(0);
         expect(result.pageInfo).toMatchObject({
@@ -727,6 +736,7 @@ describe('PaginationService Integration Test', () => {
         );
 
         expect(result.edges).toHaveLength(0);
+        expect(result.totalCount).toBe(0);
         expect(result.currentCount).toBe(0);
         expect(result.pageInfo).toMatchObject({
           hasNextPage: false,
@@ -952,11 +962,7 @@ describe('PaginationService Integration Test', () => {
         paginationService = paginationFactory.create<TestEntity>();
         const queryBuilder = repository.createQueryBuilder('entity');
         queryBuilder
-          .leftJoin(
-            'integrationtest_entity',
-            'related',
-            'related.status = entity.status',
-          )
+          .leftJoin(TestEntity, 'related', 'related.status = entity.status')
           .where('entity.status = :status', { status: 'ACTIVE' })
           .orderBy('entity.createdAt', 'ASC');
 
@@ -1448,7 +1454,11 @@ describe('PaginationService Integration Test', () => {
                 .where('event.taskId = task.id'),
             'lastEventAt',
           );
-          queryBuilder.orderBy('"lastEventAt"', order, 'NULLS LAST');
+          queryBuilder.orderBy(
+            'CASE WHEN "lastEventAt" IS NULL THEN 1 ELSE 0 END',
+            'ASC',
+          );
+          queryBuilder.addOrderBy('"lastEventAt"', order);
         } else {
           const sortFieldMap = {
             [TaskSortField.CREATED_AT]: 'task.createdAt',
@@ -1473,6 +1483,65 @@ describe('PaginationService Integration Test', () => {
     }
   });
 
+  it('should handle pagination correctly on a large dataset', async () => {
+    // Create 132 entities to match the bug report scenario
+    await createEntities(132);
+
+    // First call - should return totalCount: 132
+    const firstPage = await getManyWithCount({ first: 10 });
+
+    expect(firstPage.totalCount).toBe(132);
+    expect(firstPage.currentCount).toBe(132);
+    expect(firstPage.previousCount).toBe(0);
+    expect(firstPage.edges).toHaveLength(10);
+
+    // Second call with after cursor
+    const secondPage = await getManyWithCount({
+      first: 10,
+      after: firstPage.pageInfo.endCursor,
+    });
+
+    expect(secondPage.totalCount).toBe(132);
+    expect(secondPage.currentCount).toBe(122);
+    expect(secondPage.previousCount).toBe(10);
+    expect(secondPage.edges).toHaveLength(10);
+
+    // Third call
+    const thirdPage = await getManyWithCount({
+      first: 10,
+      after: secondPage.pageInfo.endCursor,
+    });
+
+    expect(thirdPage.totalCount).toBe(132);
+    expect(thirdPage.currentCount).toBe(112);
+    expect(thirdPage.previousCount).toBe(20);
+    expect(thirdPage.edges).toHaveLength(10);
+  });
+
+  it('should handle pagination correctly with specific page sizes', async () => {
+    // Create 132 entities to match the bug report scenario
+    await createEntities(132);
+
+    // First call
+    const firstPage = await getManyWithCount({ first: 87 });
+
+    expect(firstPage.totalCount).toBe(132);
+    expect(firstPage.currentCount).toBe(132);
+    expect(firstPage.previousCount).toBe(0);
+    expect(firstPage.edges).toHaveLength(87);
+
+    // Second call with after cursor
+    const secondPage = await getManyWithCount({
+      first: 45, // Request 45 items
+      after: firstPage.pageInfo.endCursor,
+    });
+
+    expect(secondPage.totalCount).toBe(132);
+    expect(secondPage.currentCount).toBe(45);
+    expect(secondPage.previousCount).toBe(87);
+    expect(secondPage.edges).toHaveLength(45);
+  });
+
   async function createTestingModule(): Promise<TestingModule> {
     return Test.createTestingModule({
       imports: [
@@ -1482,7 +1551,6 @@ describe('PaginationService Integration Test', () => {
           entities: [TestEntity, TaskEntity, TaskEventEntity, TaskTargetEntity],
           synchronize: true,
           logging: false,
-          entityPrefix: `integration`,
         }),
         TypeOrmModule.forFeature([
           TestEntity,

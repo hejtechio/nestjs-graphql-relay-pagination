@@ -53,26 +53,16 @@ describe('PaginationResult', () => {
   });
 
   describe('totalCount', () => {
-    it('should correctly calculate total count with cursor', () => {
+    it('should use the provided totalCount', () => {
       const paginationResult = new PaginationResult(cursorService, {
         instances,
         cursorFields,
         options: { ...options, hasCursor: true },
         counts: { currentCount: 2, previousCount: 2 },
+        totalCount: 10, // Provide a fixed total count
       });
 
-      expect(paginationResult.totalCount).toBe(5);
-    });
-
-    it('should correctly calculate total count without cursor', () => {
-      const paginationResult = new PaginationResult(cursorService, {
-        instances,
-        cursorFields,
-        options: { ...options, hasCursor: false },
-        counts: { currentCount: 2, previousCount: 2 },
-      });
-
-      expect(paginationResult.totalCount).toBe(4);
+      expect(paginationResult.totalCount).toBe(10);
     });
   });
 

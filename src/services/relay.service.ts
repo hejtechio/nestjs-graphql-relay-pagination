@@ -12,6 +12,7 @@ export class RelayService<Node> {
     currentCount: undefined,
     previousCount: undefined,
   };
+  private totalCount: number | undefined;
   private cursorFields: CursorFields<Node>;
   private arguments: Partial<RelayPaginationArgs<Node>>;
   private cursorService: CursorService;
@@ -34,6 +35,10 @@ export class RelayService<Node> {
     this.counts = { currentCount, previousCount };
   }
 
+  public setTotalCount(totalCount: number): void {
+    this.totalCount = totalCount;
+  }
+
   public buildPaginationResult(): PaginationResult<Node> {
     return new PaginationResult<Node>(this.cursorService, {
       instances: this.arguments.hasLast
@@ -42,6 +47,7 @@ export class RelayService<Node> {
       cursorFields: this.cursorFields,
       options: this.arguments,
       counts: this.counts,
+      totalCount: this.totalCount,
     });
   }
 }

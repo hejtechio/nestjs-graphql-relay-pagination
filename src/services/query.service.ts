@@ -104,7 +104,10 @@ export class QueryService<Node> {
 
     this.applyCursorFilters(previousQb, this.getOppositeComparisonOperator());
 
-    return previousQb.getCount();
+    const count = await previousQb.getCount();
+
+    // Include the cursor item itself in the previous count
+    return count + 1;
   }
 
   private getPrimarySortField(): string {
