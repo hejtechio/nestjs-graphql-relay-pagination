@@ -19,14 +19,8 @@ export * from './services/relay.service';
 // Export module
 export * from './pagination.module';
 
-// Export enums
-export * from './enums';
-
 // Export decorators
 export * from './decorators';
-
-// Export enums
-export * from './enums/query-order.enum';
 
 // Export utils
 export * from './util/consts';
